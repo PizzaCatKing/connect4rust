@@ -86,30 +86,32 @@ mod tests {
 
 		assert_eq!(game.play_piece(0).unwrap(), ActionResult::Win);
 	}
+		#[test]
 	fn can_win_with_4_in_a_row_left_up() {
 		let game = Connect4Game {
 			current_player: Player::Red,
 			board: [
-				[Cell::Piece(Player::Red), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-				[Cell::Piece(Player::Blue), Cell::Piece(Player::Red), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-				[Cell::Piece(Player::Blue), Cell::Piece(Player::Blue), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
 				[Cell::Piece(Player::Blue), Cell::Piece(Player::Blue), Cell::Piece(Player::Blue), Cell::Piece(Player::Red), Cell::Empty, Cell::Empty],
+				[Cell::Piece(Player::Blue), Cell::Piece(Player::Blue), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
+				[Cell::Piece(Player::Blue), Cell::Piece(Player::Red), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
+				[Cell::Piece(Player::Red), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
 				[Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
 				[Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
 				[Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
 			],
 		};
 
-		assert_eq!(game.play_piece(2).unwrap(), ActionResult::Win);
+		assert_eq!(game.play_piece(1).unwrap(), ActionResult::Win);
 	}
+		#[test]
 	fn can_win_with_4_in_a_row_left_down() {
 		let game = Connect4Game {
 			current_player: Player::Red,
 			board: [
-				[Cell::Piece(Player::Blue), Cell::Piece(Player::Blue), Cell::Piece(Player::Blue), Cell::Piece(Player::Red), Cell::Empty, Cell::Empty],
-				[Cell::Piece(Player::Blue), Cell::Piece(Player::Blue), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-				[Cell::Piece(Player::Blue), Cell::Piece(Player::Red), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
 				[Cell::Piece(Player::Red), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
+				[Cell::Piece(Player::Blue), Cell::Piece(Player::Red), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
+				[Cell::Piece(Player::Blue), Cell::Piece(Player::Blue), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
+				[Cell::Piece(Player::Blue), Cell::Piece(Player::Blue), Cell::Piece(Player::Blue), Cell::Piece(Player::Red), Cell::Empty, Cell::Empty],
 				[Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
 				[Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
 				[Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
@@ -212,9 +214,9 @@ impl Connect4Game {
 		// Up+left + down+right
 		total = 1; // Reset total
 		// Up + left
-		let num_left_up_moves = cmp::min(column, self.board[column].len() - 1 - current_height);
+		let num_left_up_moves = cmp::min(column, self.board[column].len() - current_height);
 		if num_left_up_moves > 0 {
-			for offset in (1..num_left_up_moves) {
+			for offset in 1..num_left_up_moves + 1 {
 				if let Cell::Piece(i) = self.board[column - offset][current_height + offset] {
 					if i == player {
 						total += 1;
@@ -225,9 +227,9 @@ impl Connect4Game {
 			}
 		}
 		// Down + Right
-		let num_down_right_moves = cmp::min(self.board.len() - 1 - column, current_height);
+		let num_down_right_moves = cmp::min(self.board.len() - column, current_height);
 		if num_down_right_moves > 0 {
-			for offset in (1..num_down_right_moves) {
+			for offset in 1..num_down_right_moves + 1 {
 				if let Cell::Piece(i) = self.board[column + offset][current_height - offset] {
 					if i == player {
 						total += 1;
@@ -241,27 +243,12 @@ impl Connect4Game {
 		if total >= total_to_win {
 			return true
 		}
-		if current_height >= total_to_win {
-			for x in (0..current_height).rev() {
-				println!("Down {:?} col:{} height:{}, {}", self.board[x][current_height], x, current_height, total);
-				if let Cell::Piece(i) = self.board[column][x] {
-					if i == player {
-						total += 1;
-					}
-					else { break; }
-				}
-				else { break; }
-			}
-		}
-		if total >= total_to_win {
-			return true
-		}
 		// Up+left + down+right
 		total = 1; // Reset total
 		// Up + left
 		let num_left_up_moves = cmp::min(column, self.board[column].len() - 1 - current_height);
 		if num_left_up_moves > 0 {
-			for offset in 1..num_left_up_moves {
+			for offset in 1..num_left_up_moves + 1 {
 				if let Cell::Piece(i) = self.board[column - offset][current_height + offset] {
 					if i == player {
 						total += 1;
@@ -274,7 +261,7 @@ impl Connect4Game {
 		// Down + Right
 		let num_down_right_moves = cmp::min(self.board.len() - 1 - column, current_height);
 		if num_down_right_moves > 0 {
-			for offset in 1..num_down_right_moves {
+			for offset in 1..num_down_right_moves + 1 {
 				if let Cell::Piece(i) = self.board[column + offset][current_height - offset] {
 					if i == player {
 						total += 1;
