@@ -214,9 +214,9 @@ impl Connect4Game {
 		// Up+left + down+right
 		total = 1; // Reset total
 		// Up + left
-		let num_left_up_moves = cmp::min(column, self.board[column].len() - current_height);
-		if num_left_up_moves > 0 {
-			for offset in 1..num_left_up_moves + 1 {
+		let num_up_left_moves = cmp::min(column, self.board[column].len() - current_height);
+		if num_up_left_moves > 0 {
+			for offset in 1..num_up_left_moves + 1 {
 				if let Cell::Piece(i) = self.board[column - offset][current_height + offset] {
 					if i == player {
 						total += 1;
@@ -243,13 +243,13 @@ impl Connect4Game {
 		if total >= total_to_win {
 			return true
 		}
-		// Up+left + down+right
+		// Up+right + down+left
 		total = 1; // Reset total
 		// Up + left
-		let num_left_up_moves = cmp::min(column, self.board[column].len() - 1 - current_height);
-		if num_left_up_moves > 0 {
-			for offset in 1..num_left_up_moves + 1 {
-				if let Cell::Piece(i) = self.board[column - offset][current_height + offset] {
+		let num_up_right_moves = cmp::min(self.board.len() - column, self.board[column].len() - current_height);
+		if num_up_right_moves > 0 {
+			for offset in 1..num_up_right_moves + 1 {
+				if let Cell::Piece(i) = self.board[column + offset][current_height + offset] {
 					if i == player {
 						total += 1;
 					}
@@ -258,11 +258,11 @@ impl Connect4Game {
 				else {break;}
 			}
 		}
-		// Down + Right
-		let num_down_right_moves = cmp::min(self.board.len() - 1 - column, current_height);
-		if num_down_right_moves > 0 {
-			for offset in 1..num_down_right_moves + 1 {
-				if let Cell::Piece(i) = self.board[column + offset][current_height - offset] {
+		// Down + Left
+		let num_down_left_moves = cmp::min(column, current_height);
+		if num_down_left_moves > 0 {
+			for offset in 1..num_down_left_moves + 1 {
+				if let Cell::Piece(i) = self.board[column - offset][current_height - offset] {
 					if i == player {
 						total += 1;
 					}
