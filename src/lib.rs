@@ -1,4 +1,5 @@
 use std::cmp;
+use std::fmt;
 
 #[cfg(test)]
 mod tests {
@@ -123,42 +124,82 @@ mod tests {
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
-enum Player {
+pub enum Player {
 	Red,
 	Blue,
 }
+impl fmt::Display for Player {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		if *self == Player::Red {
+			write!(f, "🔴 ")
+		}
+		else{
+			write!(f, "🔵 ")
+		}
+    }
+}
 
 #[derive(Debug, PartialEq, Clone, Copy)]
-enum Cell {
+pub enum Cell {
 	Empty,
 	Piece(Player),
 }
 
+impl fmt::Display for Cell {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		match self {
+			Cell::Piece(player) => write!(f, "{}", player),
+			Cell::Empty => write!(f, "⚫ "),
+		}
+    }
+}
+
 #[derive(Debug)]
-enum ActionError {
+pub enum ActionError {
 	ColumnFull,
 	PositionOutOfBounds,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
-enum ActionResult {
-	Win,
-	Tie,
-	Move(Connect4Game)
+pub enum ActionResult {
+	Win(Connect4Game),
+	Tie(Connect4Game),
+	Move(Connect4Game),
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
-struct Connect4Game {
+pub struct Connect4Game {
 	current_player: Player,
 	board: [[Cell; 6]; 7],
 }
+impl fmt::Display for Connect4Game {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		
+        write!(f, "{}Current player:{}", self.board_to_string(), self.current_player)
 
+    }
+}
 impl Connect4Game {
-	fn new_game() -> Connect4Game {
+	pub fn new_game() -> Connect4Game {
 		Connect4Game {
 			current_player: Player::Red,
 			board: [[Cell::Empty; 6]; 7],
 		}
+	}
+	pub fn board_to_string(&self) -> String {
+		let mut board_string: String = "".to_owned();
+		for y in (0..self.board[0].len()).rev() {
+			for x in 0..self.board.len() {
+				board_string = format!("{}{}", board_string, self.board[x][y]);
+			}
+			if y <= self.board[0].len() {
+				board_string = format!("{}\n", board_string);
+			}
+		}
+		board_string
+	}
+	pub fn get_current_player(&self) -> Player {
+		self.current_player
 	}
 	fn get_top_row_for_column(&self, column: usize) -> Option<usize> {
 		self.board[column].iter().position(|&r| r == Cell::Empty)
@@ -214,7 +255,7 @@ impl Connect4Game {
 		// Up+left + down+right
 		total = 1; // Reset total
 		// Up + left
-		let num_up_left_moves = cmp::min(column, self.board[column].len() - current_height);
+		let num_up_left_moves = cmp::min(column, self.board[column].len() - 1 - current_height);
 		if num_up_left_moves > 0 {
 			for offset in 1..num_up_left_moves + 1 {
 				if let Cell::Piece(i) = self.board[column - offset][current_height + offset] {
@@ -227,7 +268,7 @@ impl Connect4Game {
 			}
 		}
 		// Down + Right
-		let num_down_right_moves = cmp::min(self.board.len() - column, current_height);
+		let num_down_right_moves = cmp::min(self.board.len() - column - 1, current_height);
 		if num_down_right_moves > 0 {
 			for offset in 1..num_down_right_moves + 1 {
 				if let Cell::Piece(i) = self.board[column + offset][current_height - offset] {
@@ -246,7 +287,7 @@ impl Connect4Game {
 		// Up+right + down+left
 		total = 1; // Reset total
 		// Up + left
-		let num_up_right_moves = cmp::min(self.board.len() - column, self.board[column].len() - current_height);
+		let num_up_right_moves = cmp::min(self.board.len() - 1 - column, self.board[column].len() - 1- current_height);
 		if num_up_right_moves > 0 {
 			for offset in 1..num_up_right_moves + 1 {
 				if let Cell::Piece(i) = self.board[column + offset][current_height + offset] {
@@ -283,7 +324,7 @@ impl Connect4Game {
 		!self.board.iter().any(|column| column[column.len() - 1] == Cell::Empty)
 	}
 	// Add current player's piece to the lowest position in the column
-	fn play_piece(&self, column: usize) -> Result<ActionResult, ActionError> {
+	pub fn play_piece(&self, column: usize) -> Result<ActionResult, ActionError> {
 		if column >= self.board.len() {
 			Err(ActionError::PositionOutOfBounds)
 		}
@@ -308,11 +349,11 @@ impl Connect4Game {
 					};
 					// Did achieve 4 in a row = win
 					if new_game.is_board_full() {
-						return Ok(ActionResult::Tie)
+						return Ok(ActionResult::Tie(new_game))
 					}
 					// Is board full = tie
 					else if new_game.did_win_at_position(self.current_player, column, first_empty_cell) {
-						return Ok(ActionResult::Win)
+						return Ok(ActionResult::Win(new_game))
 					}
 					// Else next move
 					else {

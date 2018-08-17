@@ -3,4 +3,12 @@ name = "connect4rust"
 version = "0.1.0"
 authors = ["cdufour <cdufour@i-sight.com>"]
 
+[lib]
+name = "connect4lib"
+path = "src/lib.rs"
+
+[[bin]]
+name = "connect4bin"
+path = "src/bin.rs"
+
 [dependencies]
