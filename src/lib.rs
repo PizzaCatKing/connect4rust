@@ -175,7 +175,7 @@ pub struct Connect4Game {
 impl fmt::Display for Connect4Game {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		
-        write!(f, "{}Current player:{}", self.board_to_string(), self.current_player)
+        write!(f, "{}\nCurrent player:{}", self.board_to_string(), self.current_player)
 
     }
 }
@@ -192,7 +192,7 @@ impl Connect4Game {
 			for x in 0..self.board.len() {
 				board_string = format!("{}{}", board_string, self.board[x][y]);
 			}
-			if y <= self.board[0].len() {
+			if y > 0 {
 				board_string = format!("{}\n", board_string);
 			}
 		}
@@ -200,6 +200,9 @@ impl Connect4Game {
 	}
 	pub fn get_current_player(&self) -> Player {
 		self.current_player
+	}
+	pub fn get_board(&self) -> [[Cell; 6]; 7] {
+		self.board
 	}
 	fn get_top_row_for_column(&self, column: usize) -> Option<usize> {
 		self.board[column].iter().position(|&r| r == Cell::Empty)

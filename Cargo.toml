@@ -12,3 +12,4 @@ name = "connect4bin"
 path = "src/bin.rs"
 
 [dependencies]
+rand = "0.5"

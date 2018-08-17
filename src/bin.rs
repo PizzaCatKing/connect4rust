@@ -1,31 +1,50 @@
 extern crate connect4lib;
+extern crate rand;
 
 use std::io;
+use rand::prelude::*;
 
 use connect4lib::Connect4Game;
 use connect4lib::ActionResult;
+use connect4lib::Player;
 
 pub fn main() {
 	let mut game = Connect4Game::new_game();
-
+	let mut action_result;
+	let mut rng = thread_rng();
 	 loop {
-        println!("{}", game);
-        println!("Your move: ");
+        println!("{}", game.board_to_string());
+		let mut board_numbers: String = "".to_owned();
+        for x in 0..game.get_board().len(){
+			board_numbers = format!("{}{} ", board_numbers, x + 1);
+		}
+        println!("{}", board_numbers);
 
-        let mut current_move = String::new();
+		if game.get_current_player() ==  Player::Red {
+			println!("{}, Your move: ", game.get_current_player());
 
-        io::stdin().read_line(&mut current_move)
-            .expect("Failed to read line");
+			let mut current_move = String::new();
+			io::stdin().read_line(&mut current_move)
+				.expect("Failed to read line");
 
-        let action_result = match current_move.trim().parse() {
-            Ok(current_move) => {
-				match game.play_piece(current_move) {
-					Ok(action_result) => action_result,
-					Err(_) => continue,
-				}
-			},
-            Err(_) => continue,
-        };
+			action_result = match current_move.trim().parse::<usize>() {
+				Ok(current_move) => {
+					if current_move < 1 {
+						continue;
+					}
+					else{
+						match game.play_piece(current_move - 1) {
+							Ok(action_result) => action_result,
+							Err(_) => continue,
+						}
+					}
+				},
+				Err(_) => continue,
+			};
+		}
+		else{
+			action_result = game.play_piece(rng.gen_range(0, 6)).unwrap();
+		}
 
         match action_result {
 			ActionResult::Win(new_game) => {
