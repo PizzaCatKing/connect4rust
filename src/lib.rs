@@ -131,10 +131,10 @@ pub enum Player {
 impl fmt::Display for Player {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		if *self == Player::Red {
-			write!(f, "🔴 ")
+			write!(f, "🔴")
 		}
 		else{
-			write!(f, "🔵 ")
+			write!(f, "🔵")
 		}
     }
 }
@@ -149,7 +149,7 @@ impl fmt::Display for Cell {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
 			Cell::Piece(player) => write!(f, "{}", player),
-			Cell::Empty => write!(f, "⚫ "),
+			Cell::Empty => write!(f, "⚫"),
 		}
     }
 }
