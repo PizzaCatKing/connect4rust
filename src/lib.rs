@@ -34,6 +34,65 @@ mod tests {
 	}
 
 	#[test]
+	fn from_string_correctly_parses_valid_input() {
+		let from_string_game = Connect4Game::from_string("r").unwrap();
+		let game = Connect4Game {
+			current_player: Player::Red,
+			board: [[Cell::Empty; 6]; 7],
+		};
+		assert_eq!(from_string_game, game);
+	}
+
+	#[test]
+	fn from_string_error_on_empty_input() {
+		let from_string_error = Connect4Game::from_string("").unwrap_err();
+		match from_string_error {
+			Connect4ParseError::InvalidPlayerCharacter => {},
+			_ => panic!("Parsing empty input doesn't result in an invalid player character error")
+
+		};
+	}
+
+	#[test]
+	fn from_string_error_on_invalid_player() {
+		let from_string_error = Connect4Game::from_string("c\nr").unwrap_err();
+		match from_string_error {
+			Connect4ParseError::InvalidPlayerCharacter => {},
+			_ => panic!("Parsing invalid player character doesn't result in an invalid player character error")
+
+		};
+	}
+	#[test]
+	fn from_string_error_on_invalid_piece() {
+		let from_string_error = Connect4Game::from_string("b\na").unwrap_err();
+		match from_string_error {
+			Connect4ParseError::InvalidPieceCharacter => {},
+			_ => panic!("Parsing invalid piece character doesn't result in an invalid piece character error")
+
+		};
+	}
+
+	#[test]
+	fn from_string_error_on_row_too_long() {
+		let from_string_error = Connect4Game::from_string("b\nrrrrrrr").unwrap_err();
+		match from_string_error {
+			Connect4ParseError::RowTooLong => {},
+			_ => panic!("Parsing row that is too long doesn't result in a row too long error")
+
+		};
+	}
+
+	#[test]
+	fn from_string_error_on_too_many_rows() {
+		let from_string_error = Connect4Game::from_string("b\n\n\n\n\n\n\n\n").unwrap_err();
+		match from_string_error {
+			Connect4ParseError::TooManyRows => {},
+			_ => panic!("Parsing too many rows doesn't result in a too many rows error")
+
+		};
+	}
+
+	#[test]
 	fn playing_a_piece_causing_a_full_board_results_in_a_tie() {
 		// Col 0 has 1 missing piece
 		let game = Connect4Game::from_string(
@@ -193,7 +252,6 @@ pub enum ActionResult {
 
 #[derive(Debug)]
 pub enum Connect4ParseError {
-	MissingPlayer,
 	InvalidPlayerCharacter,
 	InvalidPieceCharacter,
 	RowTooLong,
@@ -242,9 +300,6 @@ impl Connect4Game {
 	*/
 	pub fn from_string(string: &str) -> Result<Connect4Game, Connect4ParseError> {
 		let string_rows: Vec<&str> = string.split('\n').collect();
-		if string_rows.len() < 1 {
-			return Err(Connect4ParseError::MissingPlayer);
-		}
 		if string_rows.len() > 8 { // 1 player, 6 rows
 			return Err(Connect4ParseError::TooManyRows);
 		};
