@@ -295,10 +295,9 @@ pub enum Player {
 }
 impl fmt::Display for Player {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		if *self == Player::Red {
-			write!(f, "🔴")
-		} else {
-			write!(f, "🔵")
+		match self {
+			Player::Red => write!(f, "🔴"),
+			Player::Blue => write!(f, "🔵"),
 		}
 	}
 }
