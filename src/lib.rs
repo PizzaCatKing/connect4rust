@@ -1,271 +1,20 @@
 use std::cmp;
 use std::fmt;
 
-#[cfg(test)]
-mod tests {
-	use super::*;
-
-	#[test]
-	fn new_game_is_empty() {
-		let new_game = Connect4Game::new_game();
-		assert_eq!(new_game.current_player, Player::Red);
-	}
-
-	#[test]
-	fn playing_a_piece_doesnt_change_the_original_object() {
-		let game = Connect4Game::new_game();
-		game.play_piece(0).unwrap();
-
-		assert_eq!(game.board[0][0], Cell::Empty);
-		assert_eq!(game.current_player, Player::Red);
-	}
-
-	#[test]
-	fn playing_a_piece_adds_it_to_the_column() {
-		let game = Connect4Game::new_game();
-		if let ActionResult::Move(game_after_move) = game.play_piece(0).unwrap() {
-			assert_eq!(game_after_move.board[0][0], Cell::Piece(Player::Red));
-			assert_eq!(game_after_move.current_player, Player::Blue);
-		} else {
-			panic!("Playing piece on empty board caused result other than 'Move'");
-		}
-	}
-
-	#[test]
-	fn from_string_correctly_parses_valid_input() {
-		let from_string_game = Connect4Game::from_string("r").unwrap();
-		let game = Connect4Game {
-			current_player: Player::Red,
-			board: [[Cell::Empty; 6]; 7],
-		};
-		assert_eq!(from_string_game, game);
-	}
-
-	#[test]
-	fn from_string_error_on_empty_input() {
-		let from_string_error = Connect4Game::from_string("").unwrap_err();
-		match from_string_error {
-			Connect4ParseError::InvalidPlayerCharacter => {}
-			_ => panic!("Parsing empty input doesn't result in an invalid player character error"),
-		};
-	}
-
-	#[test]
-	fn from_string_error_on_invalid_player() {
-		let from_string_error = Connect4Game::from_string("c\nr").unwrap_err();
-		match from_string_error {
-			Connect4ParseError::InvalidPlayerCharacter => {},
-			_ => panic!("Parsing invalid player character doesn't result in an invalid player character error")
-
-		};
-	}
-	#[test]
-	fn from_string_error_on_invalid_piece() {
-		let from_string_error = Connect4Game::from_string("b\na").unwrap_err();
-		match from_string_error {
-			Connect4ParseError::InvalidPieceCharacter => {},
-			_ => panic!("Parsing invalid piece character doesn't result in an invalid piece character error")
-
-		};
-	}
-
-	#[test]
-	fn from_string_error_on_row_too_long() {
-		let from_string_error = Connect4Game::from_string("b\nrrrrrrr").unwrap_err();
-		match from_string_error {
-			Connect4ParseError::RowTooLong => {}
-			_ => panic!("Parsing row that is too long doesn't result in a row too long error"),
-		};
-	}
-
-	#[test]
-	fn from_string_error_on_too_many_rows() {
-		let from_string_error = Connect4Game::from_string("b\n\n\n\n\n\n\n\n").unwrap_err();
-		match from_string_error {
-			Connect4ParseError::TooManyRows => {}
-			_ => panic!("Parsing too many rows doesn't result in a too many rows error"),
-		};
-	}
-
-	#[test]
-	fn playing_a_piece_causing_a_full_board_results_in_a_tie() {
-		// Col 0 has 1 missing piece
-		let game = Connect4Game::from_string(
-			"b
-bbrrb
-rrbbrr
-bbrrbb
-rrbbrr
-bbrrbb
-rrbbrr
-bbrrbb",
-		).unwrap();
-
-		let tied_game = ActionResult::Tie(
-			Connect4Game::from_string(
-				"r
-bbrrbb
-rrbbrr
-bbrrbb
-rrbbrr
-bbrrbb
-rrbbrr
-bbrrbb",
-			).unwrap(),
-		);
-		assert_eq!(game.play_piece(0).unwrap(), tied_game)
-	}
-	#[test]
-	fn can_win_with_4_in_a_row_across() {
-		let game = Connect4Game::from_string(
-			"r
-r
-r
-
-r
-b
-b
-b",
-		).unwrap();
-
-		let won_game = ActionResult::Win(
-			Connect4Game::from_string(
-				"b
-r
-r
-r
-r
-b
-b
-b",
-			).unwrap(),
-		);
-
-		assert_eq!(game.play_piece(2).unwrap(), won_game);
-	}
-	#[test]
-	fn can_win_with_4_in_a_row_down() {
-		let game = Connect4Game::from_string(
-			"r
-rrr
-b
-b
-b",
-		).unwrap();
-
-		let won_game = ActionResult::Win(
-			Connect4Game::from_string(
-				"b
-rrrr
-b
-b
-b",
-			).unwrap(),
-		);
-
-		assert_eq!(game.play_piece(0).unwrap(), won_game);
-	}
-	#[test]
-	fn can_win_with_4_in_a_row_left_up() {
-		let game = Connect4Game::from_string(
-			"r
-bbbr
-bb
-br
-r",
-		).unwrap();
-
-		let won_game = ActionResult::Win(
-			Connect4Game::from_string(
-				"b
-bbbr
-bbr
-br
-r",
-			).unwrap(),
-		);
-
-		assert_eq!(game.play_piece(1).unwrap(), won_game);
-	}
-	#[test]
-	fn can_win_with_4_in_a_row_left_down() {
-		let game = Connect4Game::from_string(
-			"r
-r
-b
-bbr
-bbbr",
-		).unwrap();
-
-		let won_game = ActionResult::Win(
-			Connect4Game::from_string(
-				"b
-r
-br
-bbr
-bbbr",
-			).unwrap(),
-		);
-
-		assert_eq!(game.play_piece(1).unwrap(), won_game);
-	}
-}
-
-#[derive(Debug, PartialEq, Clone, Copy)]
-pub enum Player {
-	Red,
-	Blue,
-}
-impl fmt::Display for Player {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		if *self == Player::Red {
-			write!(f, "🔴")
-		} else {
-			write!(f, "🔵")
-		}
-	}
-}
-
-#[derive(Debug, PartialEq, Clone, Copy)]
-pub enum Cell {
-	Empty,
-	Piece(Player),
-}
-
-impl fmt::Display for Cell {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		match self {
-			Cell::Piece(player) => write!(f, "{}", player),
-			Cell::Empty => write!(f, "⚫"),
-		}
-	}
-}
-
-#[derive(Debug)]
-pub enum ActionError {
-	ColumnFull,
-	PositionOutOfBounds,
-}
-
-#[derive(Debug, PartialEq, Clone, Copy)]
-pub enum ActionResult {
-	Win(Connect4Game),
-	Tie(Connect4Game),
-	Move(Connect4Game),
-}
-
-#[derive(Debug)]
-pub enum Connect4ParseError {
-	InvalidPlayerCharacter,
-	InvalidPieceCharacter,
-	RowTooLong,
-	TooManyRows,
-}
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Connect4Game {
 	current_player: Player,
 	board: [[Cell; 6]; 7],
 }
+
+#[derive(Debug)]
+pub enum Connect4FromStringError {
+	InvalidPlayerCharacter,
+	InvalidPieceCharacter,
+	RowTooLong,
+	TooManyRows,
+}
+
 impl fmt::Display for Connect4Game {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(
@@ -305,29 +54,29 @@ impl Connect4Game {
 	rbrbrb
 	rbrbrb
 	*/
-	pub fn from_string(string: &str) -> Result<Connect4Game, Connect4ParseError> {
+	pub fn from_string(string: &str) -> Result<Connect4Game, Connect4FromStringError> {
 		let string_rows: Vec<&str> = string.split('\n').collect();
 		if string_rows.len() > 8 {
 			// 1 player, 6 rows
-			return Err(Connect4ParseError::TooManyRows);
+			return Err(Connect4FromStringError::TooManyRows);
 		};
 
 		let current_player = match string_rows[0].as_ref() {
 			"r" => Player::Red,
 			"b" => Player::Blue,
-			_ => return { Err(Connect4ParseError::InvalidPlayerCharacter) },
+			_ => return { Err(Connect4FromStringError::InvalidPlayerCharacter) },
 		};
 		let mut board = [[Cell::Empty; 6]; 7];
 		for (row_index, row) in string_rows.iter().skip(1).enumerate() {
 			if row.len() > 6 {
 				// 6 peices max per row
-				return Err(Connect4ParseError::RowTooLong);
+				return Err(Connect4FromStringError::RowTooLong);
 			};
 			for (index, caracter) in row.chars().enumerate() {
 				board[row_index][index] = match caracter {
 					'r' => Cell::Piece(Player::Red),
 					'b' => Cell::Piece(Player::Blue),
-					_ => return Err(Connect4ParseError::InvalidPieceCharacter),
+					_ => return Err(Connect4FromStringError::InvalidPieceCharacter),
 				}
 			}
 		}
@@ -537,5 +286,257 @@ impl Connect4Game {
 				None => Err(ActionError::ColumnFull),
 			}
 		}
+	}
+}
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum Player {
+	Red,
+	Blue,
+}
+impl fmt::Display for Player {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		if *self == Player::Red {
+			write!(f, "🔴")
+		} else {
+			write!(f, "🔵")
+		}
+	}
+}
+
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum Cell {
+	Empty,
+	Piece(Player),
+}
+
+impl fmt::Display for Cell {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		match self {
+			Cell::Piece(player) => write!(f, "{}", player),
+			Cell::Empty => write!(f, "⚫"),
+		}
+	}
+}
+
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum ActionResult {
+	Win(Connect4Game),
+	Tie(Connect4Game),
+	Move(Connect4Game),
+}
+
+#[derive(Debug)]
+pub enum ActionError {
+	ColumnFull,
+	PositionOutOfBounds,
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn new_game_is_empty() {
+		let new_game = Connect4Game::new_game();
+		assert_eq!(new_game.current_player, Player::Red);
+	}
+
+	#[test]
+	fn playing_a_piece_doesnt_change_the_original_object() {
+		let game = Connect4Game::new_game();
+		game.play_piece(0).unwrap();
+
+		assert_eq!(game.board[0][0], Cell::Empty);
+		assert_eq!(game.current_player, Player::Red);
+	}
+
+	#[test]
+	fn playing_a_piece_adds_it_to_the_column() {
+		let game = Connect4Game::new_game();
+		if let ActionResult::Move(game_after_move) = game.play_piece(0).unwrap() {
+			assert_eq!(game_after_move.board[0][0], Cell::Piece(Player::Red));
+			assert_eq!(game_after_move.current_player, Player::Blue);
+		} else {
+			panic!("Playing piece on empty board caused result other than 'Move'");
+		}
+	}
+
+	#[test]
+	fn from_string_correctly_parses_valid_input() {
+		let from_string_game = Connect4Game::from_string("r").unwrap();
+		let game = Connect4Game {
+			current_player: Player::Red,
+			board: [[Cell::Empty; 6]; 7],
+		};
+		assert_eq!(from_string_game, game);
+	}
+
+	#[test]
+	fn from_string_error_on_empty_input() {
+		let from_string_error = Connect4Game::from_string("").unwrap_err();
+		match from_string_error {
+			Connect4FromStringError::InvalidPlayerCharacter => {}
+			_ => panic!("Parsing empty input doesn't result in an invalid player character error"),
+		};
+	}
+
+	#[test]
+	fn from_string_error_on_invalid_player() {
+		let from_string_error = Connect4Game::from_string("c\nr").unwrap_err();
+		match from_string_error {
+			Connect4FromStringError::InvalidPlayerCharacter => {},
+			_ => panic!("Parsing invalid player character doesn't result in an invalid player character error")
+
+		};
+	}
+	#[test]
+	fn from_string_error_on_invalid_piece() {
+		let from_string_error = Connect4Game::from_string("b\na").unwrap_err();
+		match from_string_error {
+			Connect4FromStringError::InvalidPieceCharacter => {},
+			_ => panic!("Parsing invalid piece character doesn't result in an invalid piece character error")
+
+		};
+	}
+
+	#[test]
+	fn from_string_error_on_row_too_long() {
+		let from_string_error = Connect4Game::from_string("b\nrrrrrrr").unwrap_err();
+		match from_string_error {
+			Connect4FromStringError::RowTooLong => {}
+			_ => panic!("Parsing row that is too long doesn't result in a row too long error"),
+		};
+	}
+
+	#[test]
+	fn from_string_error_on_too_many_rows() {
+		let from_string_error = Connect4Game::from_string("b\n\n\n\n\n\n\n\n").unwrap_err();
+		match from_string_error {
+			Connect4FromStringError::TooManyRows => {}
+			_ => panic!("Parsing too many rows doesn't result in a too many rows error"),
+		};
+	}
+
+	#[test]
+	fn playing_a_piece_causing_a_full_board_results_in_a_tie() {
+		// Col 0 has 1 missing piece
+		let game = Connect4Game::from_string(
+			"b
+bbrrb
+rrbbrr
+bbrrbb
+rrbbrr
+bbrrbb
+rrbbrr
+bbrrbb",
+		).unwrap();
+
+		let tied_game = ActionResult::Tie(
+			Connect4Game::from_string(
+				"r
+bbrrbb
+rrbbrr
+bbrrbb
+rrbbrr
+bbrrbb
+rrbbrr
+bbrrbb",
+			).unwrap(),
+		);
+		assert_eq!(game.play_piece(0).unwrap(), tied_game)
+	}
+	#[test]
+	fn can_win_with_4_in_a_row_across() {
+		let game = Connect4Game::from_string(
+			"r
+r
+r
+
+r
+b
+b
+b",
+		).unwrap();
+
+		let won_game = ActionResult::Win(
+			Connect4Game::from_string(
+				"b
+r
+r
+r
+r
+b
+b
+b",
+			).unwrap(),
+		);
+
+		assert_eq!(game.play_piece(2).unwrap(), won_game);
+	}
+	#[test]
+	fn can_win_with_4_in_a_row_down() {
+		let game = Connect4Game::from_string(
+			"r
+rrr
+b
+b
+b",
+		).unwrap();
+
+		let won_game = ActionResult::Win(
+			Connect4Game::from_string(
+				"b
+rrrr
+b
+b
+b",
+			).unwrap(),
+		);
+
+		assert_eq!(game.play_piece(0).unwrap(), won_game);
+	}
+	#[test]
+	fn can_win_with_4_in_a_row_left_up() {
+		let game = Connect4Game::from_string(
+			"r
+bbbr
+bb
+br
+r",
+		).unwrap();
+
+		let won_game = ActionResult::Win(
+			Connect4Game::from_string(
+				"b
+bbbr
+bbr
+br
+r",
+			).unwrap(),
+		);
+
+		assert_eq!(game.play_piece(1).unwrap(), won_game);
+	}
+	#[test]
+	fn can_win_with_4_in_a_row_left_down() {
+		let game = Connect4Game::from_string(
+			"r
+r
+b
+bbr
+bbbr",
+		).unwrap();
+
+		let won_game = ActionResult::Win(
+			Connect4Game::from_string(
+				"b
+r
+br
+bbr
+bbbr",
+			).unwrap(),
+		);
+
+		assert_eq!(game.play_piece(1).unwrap(), won_game);
 	}
 }
