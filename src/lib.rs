@@ -36,90 +36,114 @@ mod tests {
 	#[test]
 	fn playing_a_piece_causing_a_full_board_results_in_a_tie() {
 		// Col 0 has 1 missing piece
-		let game = Connect4Game {
-			current_player: Player::Red,
-			board: [
-				[Cell::Piece(Player::Blue), Cell::Piece(Player::Blue), Cell::Piece(Player::Red), Cell::Piece(Player::Red), Cell::Piece(Player::Blue), Cell::Empty],
-				[Cell::Piece(Player::Red), Cell::Piece(Player::Red), Cell::Piece(Player::Blue), Cell::Piece(Player::Blue), Cell::Piece(Player::Red), Cell::Piece(Player::Red)],
-				[Cell::Piece(Player::Blue), Cell::Piece(Player::Blue), Cell::Piece(Player::Red), Cell::Piece(Player::Red), Cell::Piece(Player::Blue), Cell::Piece(Player::Blue)],
-				[Cell::Piece(Player::Red), Cell::Piece(Player::Red), Cell::Piece(Player::Blue), Cell::Piece(Player::Blue), Cell::Piece(Player::Red), Cell::Piece(Player::Red)],
-				[Cell::Piece(Player::Blue), Cell::Piece(Player::Blue), Cell::Piece(Player::Red), Cell::Piece(Player::Red), Cell::Piece(Player::Blue), Cell::Piece(Player::Blue)],
-				[Cell::Piece(Player::Red), Cell::Piece(Player::Red), Cell::Piece(Player::Blue), Cell::Piece(Player::Blue), Cell::Piece(Player::Red), Cell::Piece(Player::Red)],
-				[Cell::Piece(Player::Blue), Cell::Piece(Player::Blue), Cell::Piece(Player::Red), Cell::Piece(Player::Red), Cell::Piece(Player::Blue), Cell::Piece(Player::Blue)],
-			],
-		};
-		match game.play_piece(0) {
-			Ok(n)  => assert_eq!(n, ActionResult::Tie),
-			Err(_) => assert!(false)
-		}
-	}
-		#[test]
-	fn can_win_with_4_in_a_row_across() {
-		let game = Connect4Game {
-			current_player: Player::Red,
-			board: [
-				[Cell::Piece(Player::Red), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-				[Cell::Piece(Player::Red), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-				[Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-				[Cell::Piece(Player::Red), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-				[Cell::Piece(Player::Blue), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-				[Cell::Piece(Player::Blue), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-				[Cell::Piece(Player::Blue), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-			],
-		};
+		let game = Connect4Game::from_string(
+			"b
+bbrrb
+rrbbrr
+bbrrbb
+rrbbrr
+bbrrbb
+rrbbrr
+bbrrbb"
+		).unwrap();
 
-		assert_eq!(game.play_piece(2).unwrap(), ActionResult::Win);
+		let tied_game = ActionResult::Tie(Connect4Game::from_string(
+			"r
+bbrrbb
+rrbbrr
+bbrrbb
+rrbbrr
+bbrrbb
+rrbbrr
+bbrrbb"
+		).unwrap());
+		assert_eq!( game.play_piece(0).unwrap(), tied_game)
+	}
+	#[test]
+	fn can_win_with_4_in_a_row_across() {
+		let game = Connect4Game::from_string(
+			"r
+r
+r
+
+r
+b
+b
+b"
+		).unwrap();
+
+		let won_game = ActionResult::Win(Connect4Game::from_string(
+			"b
+r
+r
+r
+r
+b
+b
+b"
+		).unwrap());
+
+		assert_eq!(game.play_piece(2).unwrap(), won_game);
 	}
 		#[test]
 	fn can_win_with_4_in_a_row_down() {
-		let game = Connect4Game {
-			current_player: Player::Red,
-			board: [
-				[Cell::Piece(Player::Red), Cell::Piece(Player::Red), Cell::Piece(Player::Red), Cell::Empty, Cell::Empty, Cell::Empty],
-				[Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-				[Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-				[Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-				[Cell::Piece(Player::Blue), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-				[Cell::Piece(Player::Blue), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-				[Cell::Piece(Player::Blue), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-			],
-		};
+		let game = Connect4Game::from_string(
+			"r
+rrr
+b
+b
+b"
+		).unwrap();
 
-		assert_eq!(game.play_piece(0).unwrap(), ActionResult::Win);
+		let won_game = ActionResult::Win(Connect4Game::from_string(
+			"b
+rrrr
+b
+b
+b"
+		).unwrap());
+
+		assert_eq!(game.play_piece(0).unwrap(), won_game);
 	}
 		#[test]
 	fn can_win_with_4_in_a_row_left_up() {
-		let game = Connect4Game {
-			current_player: Player::Red,
-			board: [
-				[Cell::Piece(Player::Blue), Cell::Piece(Player::Blue), Cell::Piece(Player::Blue), Cell::Piece(Player::Red), Cell::Empty, Cell::Empty],
-				[Cell::Piece(Player::Blue), Cell::Piece(Player::Blue), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-				[Cell::Piece(Player::Blue), Cell::Piece(Player::Red), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-				[Cell::Piece(Player::Red), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-				[Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-				[Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-				[Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-			],
-		};
+		let game = Connect4Game::from_string(
+			"r
+bbbr
+bb
+br
+r"
+		).unwrap();
 
-		assert_eq!(game.play_piece(1).unwrap(), ActionResult::Win);
+		let won_game = ActionResult::Win(Connect4Game::from_string(
+			"b
+bbbr
+bbr
+br
+r"
+		).unwrap());
+
+		assert_eq!(game.play_piece(1).unwrap(), won_game);
 	}
 		#[test]
 	fn can_win_with_4_in_a_row_left_down() {
-		let game = Connect4Game {
-			current_player: Player::Red,
-			board: [
-				[Cell::Piece(Player::Red), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-				[Cell::Piece(Player::Blue), Cell::Piece(Player::Red), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-				[Cell::Piece(Player::Blue), Cell::Piece(Player::Blue), Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-				[Cell::Piece(Player::Blue), Cell::Piece(Player::Blue), Cell::Piece(Player::Blue), Cell::Piece(Player::Red), Cell::Empty, Cell::Empty],
-				[Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-				[Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-				[Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
-			],
-		};
+				let game = Connect4Game::from_string(
+			"r
+r
+b
+bbr
+bbbr"
+		).unwrap();
 
-		assert_eq!(game.play_piece(2).unwrap(), ActionResult::Win);
+		let won_game = ActionResult::Win(Connect4Game::from_string(
+			"b
+r
+br
+bbr
+bbbr"
+		).unwrap());
+
+		assert_eq!(game.play_piece(1).unwrap(), won_game);
 	}
 }
 
@@ -167,6 +191,14 @@ pub enum ActionResult {
 	Move(Connect4Game),
 }
 
+#[derive(Debug)]
+pub enum Connect4ParseError {
+	MissingPlayer,
+	InvalidPlayerCharacter,
+	InvalidPieceCharacter,
+	RowTooLong,
+	TooManyRows,
+}
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Connect4Game {
 	current_player: Player,
@@ -174,7 +206,7 @@ pub struct Connect4Game {
 }
 impl fmt::Display for Connect4Game {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		
+
         write!(f, "{}\nCurrent player:{}", self.board_to_string(), self.current_player)
 
     }
@@ -185,6 +217,62 @@ impl Connect4Game {
 			current_player: Player::Red,
 			board: [[Cell::Empty; 6]; 7],
 		}
+	}
+
+	/*
+	Format for strings:
+	Fist line:
+		current player
+	Lines 2 - 9
+	Pices, up to 6 caracters
+	r = red
+	b = blue
+
+	left is bottom of board
+
+	Example:
+	r
+	rbrbrb
+	rbrbrb
+	rbrbrb
+	rbrbrb
+	rbrbrb
+	rbrbrb
+	rbrbrb
+	*/
+	pub fn from_string(string: &str) -> Result<Connect4Game, Connect4ParseError> {
+		let string_rows: Vec<&str> = string.split('\n').collect();
+		if string_rows.len() < 1 {
+			return Err(Connect4ParseError::MissingPlayer);
+		}
+		if string_rows.len() > 8 { // 1 player, 6 rows
+			return Err(Connect4ParseError::TooManyRows);
+		};
+
+		let current_player = match string_rows[0].as_ref() {
+			"r" => Player::Red,
+			"b" => Player::Blue,
+			_ => return {
+				Err(Connect4ParseError::InvalidPlayerCharacter)
+				},
+		};
+		let mut board = [[Cell::Empty; 6]; 7];
+		for (row_index, row) in string_rows.iter().skip(1).enumerate() {
+			if row.len() > 6 { // 6 peices max per row
+				return Err(Connect4ParseError::RowTooLong);
+			};
+			for (index, caracter) in row.chars().enumerate() {
+				board[row_index][index] = match caracter {
+					'r' => Cell::Piece(Player::Red),
+					'b' => Cell::Piece(Player::Blue),
+					_ => return Err(Connect4ParseError::InvalidPieceCharacter),
+				}
+			}
+		};
+		Ok(Connect4Game {
+			current_player,
+			board,
+		})
 	}
 	pub fn board_to_string(&self) -> String {
 		let mut board_string: String = "".to_owned();
