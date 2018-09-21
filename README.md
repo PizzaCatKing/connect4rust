@@ -3,5 +3,7 @@ Connect 4 implemented in rust
 
 Current features:
 
-simple terminal UI
-""""""AI"""""" opponent
+- simple terminal UI
+- """"""AI"""""" opponent
+
+wow
