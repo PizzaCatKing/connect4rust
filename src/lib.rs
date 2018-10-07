@@ -419,122 +419,57 @@ mod tests {
 	#[test]
 	fn playing_a_piece_causing_a_full_board_results_in_a_tie() {
 		// Col 0 has 1 missing piece
-		let game = Connect4Game::from_string(
-			"b
-bbrrb
-rrbbrr
-bbrrbb
-rrbbrr
-bbrrbb
-rrbbrr
-bbrrbb",
-		).unwrap();
+		let game_string = [
+			"b", "bbrrb", "rrbbrr", "bbrrbb", "rrbbrr", "bbrrbb", "rrbbrr", "bbrrbb",
+		]
+			.join("\n");
+		let game = Connect4Game::from_string(game_string.as_str()).unwrap();
 
-		let tied_game = ActionResult::Tie(
-			Connect4Game::from_string(
-				"r
-bbrrbb
-rrbbrr
-bbrrbb
-rrbbrr
-bbrrbb
-rrbbrr
-bbrrbb",
-			).unwrap(),
-		);
+		let tied_game_string = [
+			"r", "bbrrbb", "rrbbrr", "bbrrbb", "rrbbrr", "bbrrbb", "rrbbrr", "bbrrbb",
+		]
+			.join("\n");
+		let tied_game =
+			ActionResult::Tie(Connect4Game::from_string(tied_game_string.as_str()).unwrap());
 		assert_eq!(game.play_piece(0).unwrap(), tied_game)
 	}
 	#[test]
 	fn can_win_with_4_in_a_row_across() {
-		let game = Connect4Game::from_string(
-			"r
-r
-r
-
-r
-b
-b
-b",
-		).unwrap();
-
-		let won_game = ActionResult::Win(
-			Connect4Game::from_string(
-				"b
-r
-r
-r
-r
-b
-b
-b",
-			).unwrap(),
-		);
+		let game_string = ["r", "r", "r", "", "r", "b", "b", "b"].join("\n");
+		let game = Connect4Game::from_string(game_string.as_str()).unwrap();
+		let won_game_string = ["b", "r", "r", "r", "r", "b", "b", "b"].join("\n");
+		let won_game =
+			ActionResult::Win(Connect4Game::from_string(won_game_string.as_str()).unwrap());
 
 		assert_eq!(game.play_piece(2).unwrap(), won_game);
 	}
 	#[test]
 	fn can_win_with_4_in_a_row_down() {
-		let game = Connect4Game::from_string(
-			"r
-rrr
-b
-b
-b",
-		).unwrap();
-
-		let won_game = ActionResult::Win(
-			Connect4Game::from_string(
-				"b
-rrrr
-b
-b
-b",
-			).unwrap(),
-		);
+		let game_string = ["r", "rrr", "b", "b", "b"].join("\n");
+		let game = Connect4Game::from_string(game_string.as_str()).unwrap();
+		let won_game_string = ["b", "rrrr", "b", "b", "b"].join("\n");
+		let won_game =
+			ActionResult::Win(Connect4Game::from_string(won_game_string.as_str()).unwrap());
 
 		assert_eq!(game.play_piece(0).unwrap(), won_game);
 	}
 	#[test]
 	fn can_win_with_4_in_a_row_left_up() {
-		let game = Connect4Game::from_string(
-			"r
-bbbr
-bb
-br
-r",
-		).unwrap();
-
-		let won_game = ActionResult::Win(
-			Connect4Game::from_string(
-				"b
-bbbr
-bbr
-br
-r",
-			).unwrap(),
-		);
+		let game_string = ["r", "bbbr", "bb", "br", "r"].join("\n");
+		let game = Connect4Game::from_string(game_string.as_str()).unwrap();
+		let won_game_string = ["b", "bbbr", "bbr", "br", "r"].join("\n");
+		let won_game =
+			ActionResult::Win(Connect4Game::from_string(won_game_string.as_str()).unwrap());
 
 		assert_eq!(game.play_piece(1).unwrap(), won_game);
 	}
 	#[test]
 	fn can_win_with_4_in_a_row_left_down() {
-		let game = Connect4Game::from_string(
-			"r
-r
-b
-bbr
-bbbr",
-		).unwrap();
-
-		let won_game = ActionResult::Win(
-			Connect4Game::from_string(
-				"b
-r
-br
-bbr
-bbbr",
-			).unwrap(),
-		);
+		let game_string = ["r", "r", "b", "bbr", "bbbr"].join("\n");
+		let game = Connect4Game::from_string(game_string.as_str()).unwrap();
+		let won_game_string = ["b", "r", "br", "bbr", "bbbr"].join("\n");
+		let won_game =
+			ActionResult::Win(Connect4Game::from_string(won_game_string.as_str()).unwrap());
 
 		assert_eq!(game.play_piece(1).unwrap(), won_game);
 	}
